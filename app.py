@@ -46,24 +46,19 @@ st.markdown(f"""
 }}
 
 .job-card {{
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.75);
     padding: 20px;
     border-radius: 15px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     color: white;
     border: 1px solid rgba(0,255,255,0.3);
-    transition: 0.3s;
-}}
-
-.job-card:hover {{
-    transform: scale(1.02);
-    box-shadow: 0px 0px 20px rgba(0,255,255,0.8);
+    box-shadow: 0 0 10px rgba(0,255,255,0.2);
 }}
 
 .apply-btn {{
-    background: linear-gradient(90deg, #00c6ff, #0072ff);
-    padding: 10px 15px;
-    border-radius: 10px;
+    background: linear-gradient(90deg, #4F46E5, #7C3AED);
+    padding: 10px 18px;
+    border-radius: 8px;
     color: white;
     text-decoration: none;
     font-weight: bold;
@@ -73,8 +68,8 @@ st.markdown(f"""
 
 
 # 🔥 HEADER
-st.markdown('<div class="title">🚀 JobBuddy AI - Smart Job Recommendation System </div>', unsafe_allow_html=True)
-st.write("")
+st.markdown('<div class="title">🚀 JobBuddy AI</div>', unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
 
 # 🔹 INPUT SECTION
@@ -84,7 +79,7 @@ st.subheader("📤 Upload Your Resume")
 uploaded_file = st.file_uploader("", type=["pdf"])
 
 st.subheader("💼 Job Title")
-job_title = st.text_input("", placeholder="Python Developer")
+job_title = st.text_input("", placeholder="e.g. Data Analyst")
 
 st.subheader("📧 Enter Your Email")
 email = st.text_input("", placeholder="your@email.com")
@@ -92,13 +87,10 @@ email = st.text_input("", placeholder="your@email.com")
 st.markdown('</div>', unsafe_allow_html=True)
 
 
-# 🔥 BUTTON
+# 🔥 BUTTON CLICK
 if st.button("🔍 Find Jobs"):
-    st.write("DEBUG: Job Title =", job_title)
 
-    jobs = fetch_jobs(job_title)
-
-    st.write("DEBUG: Jobs fetched =", jobs)
+    # ❌ REMOVE DEBUG (clean UI)
 
     if not uploaded_file or not email:
         st.warning("Please upload resume and enter email")
@@ -114,9 +106,8 @@ if st.button("🔍 Find Jobs"):
             # EXTRACT TEXT
             text = extract_text_from_pdf(file_path)
 
-            # DEFAULT JOB TITLE
             if not job_title:
-                job_title = "python developer"
+                job_title = "software developer"
 
             # FETCH JOBS
             jobs = fetch_jobs(job_title)
@@ -126,11 +117,11 @@ if st.button("🔍 Find Jobs"):
             for job in jobs:
                 description = job["description"].lower()
 
-                score = calculate_match(text.lower(), description.lower())
+                score = calculate_match(text.lower(), description)
 
-                # 🔥 EXPERIENCE DETECTION
+                # 🔥 EXPERIENCE FILTER
                 is_fresher = any(x in description for x in [
-                    "fresher", "0-1", "0 to 1", "entry level", "junior", "graduate","trainee","intern"
+                    "fresher", "0-1", "entry level", "junior", "graduate", "intern"
                 ])
 
                 is_senior = any(x in description for x in [
@@ -138,15 +129,13 @@ if st.button("🔍 Find Jobs"):
                     "senior", "lead", "manager"
                 ])
 
-                # ❌ REMOVE SENIOR JOBS
                 if is_senior and not is_fresher:
                     continue
 
-                # 🔥 BOOST FRESHER JOBS
+                # 🔥 BOOSTS
                 if is_fresher:
                     score += 15
 
-                # 🔥 BOOST JOB TITLE MATCH
                 if job_title.lower() in job["title"].lower():
                     score += 10
 
@@ -157,37 +146,51 @@ if st.button("🔍 Find Jobs"):
                     "link": job.get("link", "#")
                 })
 
-            # 🔥 SORT BY HIGHEST SCORE
+            # 🔥 SORT BY SCORE
             matched_jobs = sorted(
                 matched_jobs,
                 key=lambda x: x["score"],
                 reverse=True
             )
 
-            # 🔥 TOP 10
             top_jobs = matched_jobs[:10]
 
-            # 🔥 SHOW RESULTS
-            st.markdown("## 🎯 Top Results")
+        # 🎯 SHOW RESULTS (CLEAN)
+        st.markdown("## 🎯 Top Results")
 
-            if not top_jobs:
-                st.error("No suitable fresher jobs found 😢")
+        if not top_jobs:
+            st.error("No suitable jobs found 😢")
 
-            else:
-                for job in top_jobs:
-                    st.markdown(f"""
-                    <div class="job-card">
-                        <h3>{job['title']}</h3>
-                        <p><b>{job['company']}</b></p>
-                        <p>✨ Match Score: {job['score']:.2f}%</p>
-                        <a href="{job['link']}" target="_blank" class="apply-btn">
-                            🚀 Apply Now
-                        </a>
-                    </div>
-                    """, unsafe_allow_html=True)
+        else:
+            for job in top_jobs:
 
-                # 📩 SEND EMAIL
-                send_email(top_jobs, receiver=email)
+                # 🎯 SCORE COLOR
+                if job["score"] >= 70:
+                    color = "#00ffcc"
+                    label = "🔥 High Match"
+                elif job["score"] >= 50:
+                    color = "#ffd700"
+                    label = "⭐ Good Match"
+                else:
+                    color = "#ff6b6b"
+                    label = "⚠️ Low Match"
 
-                st.success("📩 Jobs sent to your email!")
-                st.balloons()
+                st.markdown(f"""
+                <div class="job-card">
+                    <h3>{job['title']}</h3>
+                    <p><b>{job['company']}</b></p>
+
+                    <p style="color:{color}; font-weight:bold;">
+                        {label} • Match Score: {job['score']:.2f}%
+                    </p>
+
+                    <a href="{job['link']}" target="_blank" class="apply-btn">
+                        🚀 Apply Now
+                    </a>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # 📩 SEND EMAIL
+            send_email(top_jobs, receiver=email)
+
+            st.success("📩 Jobs sent to your email!")
