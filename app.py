@@ -13,7 +13,7 @@ from app.notifications.email import send_email
 st.set_page_config(page_title="JobBuddy AI", layout="wide")
 
 
-# 🔥 CLEAN HTML FUNCTION (IMPORTANT FIX)
+# 🔥 CLEAN HTML FUNCTION
 def clean_html(text):
     if not text:
         return ""
@@ -50,15 +50,6 @@ st.markdown(f"""
     padding: 25px;
     border-radius: 15px;
     margin-bottom: 20px;
-}}
-
-.job-card {{
-    background: rgba(0,0,0,0.75);
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 20px;
-    color: white;
-    border: 1px solid rgba(0,255,255,0.3);
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -141,7 +132,11 @@ if st.button("🔍 Find Jobs"):
                 })
 
             # SORT
-            matched_jobs = sorted(matched_jobs, key=lambda x: x["score"], reverse=True)
+            matched_jobs = sorted(
+                matched_jobs,
+                key=lambda x: x["score"],
+                reverse=True
+            )
 
             top_jobs = matched_jobs[:10]
 
@@ -154,42 +149,26 @@ if st.button("🔍 Find Jobs"):
         else:
             for job in top_jobs:
 
-                # SCORE COLOR
+                # 🎯 SCORE BADGE
                 if job["score"] >= 70:
-                    color = "#00ffcc"
                     label = "🔥 High Match"
                 elif job["score"] >= 50:
-                    color = "#ffd700"
                     label = "⭐ Good Match"
                 else:
-                    color = "#ff6b6b"
                     label = "⚠️ Low Match"
 
-                st.markdown(f"""
-                <div class="job-card">
-                    <h3>{job['title']}</h3>
-                    <p><b>{job['company']}</b></p>
+                # ✅ CLEAN CARD (NO HTML BUGS)
+                with st.container():
+                    st.markdown(f"### {job['title']}")
+                    st.caption(job["company"])
+                    st.success(f"{label} • Match Score: {job['score']:.2f}%")
 
-                    <p style="color:{color}; font-weight:bold;">
-                        {label} • Match Score: {job['score']:.2f}%
-                    </p>
+                    # ✅ PERFECT BUTTON (NO HTML)
+                    st.link_button("🚀 Apply Now", job["link"])
 
-                    <a href="{job['link']}" target="_blank" style="
-                        display:inline-block;
-                        margin-top:10px;
-                        background: linear-gradient(90deg, #4F46E5, #7C3AED);
-                        padding:10px 18px;
-                        border-radius:8px;
-                        color:white;
-                        text-decoration:none;
-                        font-weight:bold;
-                    ">
-                        🚀 Apply Now
-                    </a>
-                </div>
-                """, unsafe_allow_html=True)
+                    st.markdown("---")
 
-            # EMAIL
+            # 📩 EMAIL
             send_email(top_jobs, receiver=email)
 
             st.success("📩 Jobs sent to your email!")
