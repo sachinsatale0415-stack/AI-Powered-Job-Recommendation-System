@@ -121,7 +121,7 @@ if st.button("🔍 Find Jobs"):
             for job in jobs:
                 description = job["description"].lower()
 
-                score = calculate_match(text, description)
+                score = calculate_match(text.lower(), description.lower())
 
                 # 🔥 EXPERIENCE DETECTION
                 is_fresher = any(x in description for x in [
