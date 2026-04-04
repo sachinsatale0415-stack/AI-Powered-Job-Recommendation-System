@@ -2,10 +2,10 @@ import streamlit as st
 import requests
 from tavily import TavilyClient
 
-# 🔐 ADD YOUR API KEYS
+# 🔐 CORRECT API KEYS
 TAVILY_API_KEY = st.secrets["TAVILY_API_KEY"]
 ADZUNA_APP_ID = st.secrets["ADZUNA_APP_ID"]
-ADZUNA_APP_KEY = st.secrets["ADZUNA_API_KEY"]
+ADZUNA_APP_KEY = st.secrets["ADZUNA_APP_KEY"]
 
 tavily = TavilyClient(api_key=TAVILY_API_KEY)
 
@@ -16,7 +16,8 @@ def fetch_from_tavily(job_title):
 
     try:
         response = tavily.search(query=query, max_results=10)
-    except:
+    except Exception as e:
+        print("Tavily Error:", e)
         return []
 
     jobs = []
@@ -33,7 +34,7 @@ def fetch_from_tavily(job_title):
 
         jobs.append({
             "title": r.get("title", "Unknown Role"),
-            "company": "Unknown",
+            "company": "From Web",
             "description": r.get("content", ""),
             "link": r.get("url", "#")
         })
@@ -48,16 +49,21 @@ def fetch_from_adzuna(job_title):
     params = {
         "app_id": ADZUNA_APP_ID,
         "app_key": ADZUNA_APP_KEY,
-        "results_per_page": 15,   # 🔥 more jobs
-        "what": job_title + " fresher",   # 🔥 important
+        "results_per_page": 15,
+        "what": job_title + " fresher",
         "where": "india",
         "content-type": "application/json"
     }
 
     try:
         response = requests.get(url, params=params, timeout=10)
+
+        # 🔥 DEBUG (VERY IMPORTANT)
+        print("Adzuna Status:", response.status_code)
+
         data = response.json()
-    except:
+    except Exception as e:
+        print("Adzuna Error:", e)
         return []
 
     jobs = []
@@ -65,7 +71,7 @@ def fetch_from_adzuna(job_title):
     for j in data.get("results", []):
         description = j.get("description", "").lower()
 
-        # 🔥 OPTIONAL: FILTER SENIOR JOBS EARLY
+        # 🔥 FILTER SENIOR JOBS
         if any(x in description for x in [
             "3+ years", "5+ years", "7+ years",
             "senior", "lead", "manager"
@@ -76,7 +82,7 @@ def fetch_from_adzuna(job_title):
             "title": j.get("title", "Unknown Role"),
             "company": j.get("company", {}).get("display_name", "Unknown"),
             "description": j.get("description", ""),
-            "link": j.get("redirect_url", "#")   # ✅ real apply link
+            "link": j.get("redirect_url", "#")
         })
 
     return jobs
@@ -86,18 +92,20 @@ def fetch_from_adzuna(job_title):
 def fetch_jobs(job_title):
     try:
         adzuna_jobs = fetch_from_adzuna(job_title)
-    except:
+    except Exception as e:
+        print("Adzuna Fetch Error:", e)
         adzuna_jobs = []
 
     try:
         tavily_jobs = fetch_from_tavily(job_title)
-    except:
+    except Exception as e:
+        print("Tavily Fetch Error:", e)
         tavily_jobs = []
 
-    # 🔥 PRIORITY: Adzuna first (better quality)
+    # 🔥 COMBINE BOTH
     all_jobs = adzuna_jobs + tavily_jobs
 
-    # 🔥 REMOVE DUPLICATES (by title)
+    # 🔥 REMOVE DUPLICATES
     unique_jobs = []
     seen_titles = set()
 
