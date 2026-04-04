@@ -32,7 +32,7 @@ st.markdown(f"""
 
 .title {{
     text-align: center;
-    color: white;
+    color: black;
     font-size: 42px;
     font-weight: bold;
 }}
