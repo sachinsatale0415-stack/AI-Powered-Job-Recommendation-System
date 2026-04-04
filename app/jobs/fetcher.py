@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 from tavily import TavilyClient
 
-# 🔐 CORRECT API KEYS
+# 🔐 API KEYS
 TAVILY_API_KEY = st.secrets["TAVILY_API_KEY"]
 ADZUNA_APP_ID = st.secrets["ADZUNA_APP_ID"]
 ADZUNA_APP_KEY = st.secrets["ADZUNA_APP_KEY"]
@@ -10,14 +10,15 @@ ADZUNA_APP_KEY = st.secrets["ADZUNA_APP_KEY"]
 tavily = TavilyClient(api_key=TAVILY_API_KEY)
 
 
-# 🔹 FETCH FROM TAVILY (FILTER BULK / LIST PAGES)
+# 🔹 FETCH FROM TAVILY
 def fetch_from_tavily(job_title):
     query = f"{job_title} fresher OR entry level OR junior jobs India"
 
     try:
         response = tavily.search(query=query, max_results=10)
+        print("Tavily Raw Results:", len(response.get("results", [])))
     except Exception as e:
-        print("Tavily Error:", e)
+        print("❌ Tavily Error:", e)
         return []
 
     jobs = []
@@ -25,11 +26,8 @@ def fetch_from_tavily(job_title):
     for r in response.get("results", []):
         title = r.get("title", "").lower()
 
-        # ❌ REMOVE BULK / AGGREGATED PAGES
-        if any(x in title for x in [
-            "jobs", "vacancies", "hiring", "list",
-            "100", "200", "50", "openings"
-        ]):
+        # ❗ Only remove obvious bulk pages
+        if any(x in title for x in ["100", "200", "bulk hiring"]):
             continue
 
         jobs.append({
@@ -39,10 +37,11 @@ def fetch_from_tavily(job_title):
             "link": r.get("url", "#")
         })
 
+    print("✅ Tavily Clean Jobs:", len(jobs))
     return jobs
 
 
-# 🔹 FETCH FROM ADZUNA (BEST SOURCE)
+# 🔹 FETCH FROM ADZUNA (MAIN SOURCE)
 def fetch_from_adzuna(job_title):
     url = "https://api.adzuna.com/v1/api/jobs/in/search/1"
 
@@ -50,32 +49,36 @@ def fetch_from_adzuna(job_title):
         "app_id": ADZUNA_APP_ID,
         "app_key": ADZUNA_APP_KEY,
         "results_per_page": 15,
-        "what": job_title + " fresher",
-        "where": "india",
-        "content-type": "application/json"
+        "what": job_title,   # 🔥 removed "fresher" for broader results
+        "where": "India"
     }
 
     try:
         response = requests.get(url, params=params, timeout=10)
 
-        # 🔥 DEBUG (VERY IMPORTANT)
-        print("Adzuna Status:", response.status_code)
+        print("\n🔵 Adzuna Status:", response.status_code)
+        print("🔗 URL:", response.url)
+
+        if response.status_code != 200:
+            print("❌ Adzuna Error Response:", response.text)
+            return []
 
         data = response.json()
+        results = data.get("results", [])
+
+        print("📊 Total Jobs Found:", len(results))
+
     except Exception as e:
-        print("Adzuna Error:", e)
+        print("❌ Adzuna Exception:", e)
         return []
 
     jobs = []
 
-    for j in data.get("results", []):
+    for j in results:
         description = j.get("description", "").lower()
 
-        # 🔥 FILTER SENIOR JOBS
-        if any(x in description for x in [
-            "3+ years", "5+ years", "7+ years",
-            "senior", "lead", "manager"
-        ]):
+        # ✅ Light filtering (not aggressive)
+        if "7+ years" in description or "10+ years" in description:
             continue
 
         jobs.append({
@@ -85,35 +88,38 @@ def fetch_from_adzuna(job_title):
             "link": j.get("redirect_url", "#")
         })
 
+    print("✅ Adzuna Clean Jobs:", len(jobs))
     return jobs
+
+
+# 🔹 REMOVE DUPLICATES (IMPROVED)
+def remove_duplicates(jobs):
+    unique_jobs = []
+    seen = set()
+
+    for job in jobs:
+        key = (job["title"].lower(), job["company"].lower())
+
+        if key not in seen:
+            seen.add(key)
+            unique_jobs.append(job)
+
+    return unique_jobs
 
 
 # 🔹 MAIN FUNCTION
 def fetch_jobs(job_title):
-    try:
-        adzuna_jobs = fetch_from_adzuna(job_title)
-    except Exception as e:
-        print("Adzuna Fetch Error:", e)
-        adzuna_jobs = []
+    print(f"\n🚀 Fetching jobs for: {job_title}")
 
-    try:
-        tavily_jobs = fetch_from_tavily(job_title)
-    except Exception as e:
-        print("Tavily Fetch Error:", e)
-        tavily_jobs = []
+    adzuna_jobs = fetch_from_adzuna(job_title)
+    tavily_jobs = fetch_from_tavily(job_title)
 
-    # 🔥 COMBINE BOTH
     all_jobs = adzuna_jobs + tavily_jobs
 
-    # 🔥 REMOVE DUPLICATES
-    unique_jobs = []
-    seen_titles = set()
+    print("🔄 Total Before Dedup:", len(all_jobs))
 
-    for job in all_jobs:
-        title = job["title"].lower()
+    unique_jobs = remove_duplicates(all_jobs)
 
-        if title not in seen_titles:
-            seen_titles.add(title)
-            unique_jobs.append(job)
+    print("✅ Final Jobs After Dedup:", len(unique_jobs))
 
     return unique_jobs
