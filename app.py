@@ -12,7 +12,7 @@ from app.notifications.email import send_email
 st.set_page_config(page_title="JobBuddy AI", layout="wide")
 
 
-# 🔥 LOAD BACKGROUND IMAGE
+# 🔥 BACKGROUND IMAGE
 def get_base64(file_path):
     with open(file_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
@@ -33,35 +33,24 @@ st.markdown(f"""
 .title {{
     text-align: center;
     color: black;
-    font-size: 40px;
+    font-size: 42px;
     font-weight: bold;
 }}
 
 .section {{
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0,0,0,0.6);
     padding: 25px;
     border-radius: 15px;
-    backdrop-filter: blur(10px);
     margin-bottom: 20px;
 }}
 
 .job-card {{
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0,0,0,0.75);
     padding: 20px;
     border-radius: 15px;
     margin-bottom: 20px;
     color: white;
     border: 1px solid rgba(0,255,255,0.3);
-    box-shadow: 0 0 10px rgba(0,255,255,0.2);
-}}
-
-.apply-btn {{
-    background: linear-gradient(90deg, #4F46E5, #7C3AED);
-    padding: 10px 18px;
-    border-radius: 8px;
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -75,8 +64,8 @@ st.markdown("<br>", unsafe_allow_html=True)
 # 🔹 INPUT SECTION
 st.markdown('<div class="section">', unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader("📤 Upload Resume (PDF)", type=["pdf"])
-job_title = st.text_input("💼 Job Title", placeholder="e.g. Data Analyst")
+uploaded_file = st.file_uploader("📤 Upload Resume", type=["pdf"])
+job_title = st.text_input("💼 Job Title", placeholder="Data Analyst")
 email = st.text_input("📧 Email", placeholder="your@email.com")
 
 st.markdown('</div>', unsafe_allow_html=True)
@@ -110,12 +99,11 @@ if st.button("🔍 Find Jobs"):
             for job in jobs:
                 description = job.get("description", "").lower()
 
-                # 🔥 MATCH SCORE
                 score = calculate_match(resume_text, description)
 
-                # 🔥 FILTER EXPERIENCE
+                # FILTER EXPERIENCE
                 is_fresher = any(x in description for x in [
-                    "fresher", "0-1", "entry level", "junior", "graduate", "intern"
+                    "fresher", "0-1", "entry level", "junior", "intern"
                 ])
 
                 is_senior = any(x in description for x in [
@@ -126,14 +114,14 @@ if st.button("🔍 Find Jobs"):
                 if is_senior and not is_fresher:
                     continue
 
-                # 🔥 BOOSTING
+                # BOOST
                 if is_fresher:
                     score += 15
 
                 if job_title.lower() in job["title"].lower():
                     score += 10
 
-                # ❌ REMOVE BAD LINKS
+                # SKIP BAD LINKS
                 if not job.get("link") or job["link"] == "#":
                     continue
 
@@ -144,7 +132,7 @@ if st.button("🔍 Find Jobs"):
                     "link": job["link"]
                 })
 
-            # 🔥 SORT
+            # SORT
             matched_jobs = sorted(matched_jobs, key=lambda x: x["score"], reverse=True)
 
             top_jobs = matched_jobs[:10]
@@ -153,12 +141,12 @@ if st.button("🔍 Find Jobs"):
         st.markdown("## 🎯 Top Results")
 
         if not top_jobs:
-            st.error("No suitable jobs found 😢")
+            st.error("No jobs found 😢")
 
         else:
             for job in top_jobs:
 
-                # 🎯 SCORE COLOR
+                # SCORE COLOR
                 if job["score"] >= 70:
                     color = "#00ffcc"
                     label = "🔥 High Match"
@@ -169,7 +157,8 @@ if st.button("🔍 Find Jobs"):
                     color = "#ff6b6b"
                     label = "⚠️ Low Match"
 
-                html = f"""
+                # ✅ DIRECT RENDER (NO VARIABLE, NO st.write)
+                st.markdown(f"""
                 <div class="job-card">
                     <h3>{job['title']}</h3>
                     <p><b>{job['company']}</b></p>
@@ -178,15 +167,22 @@ if st.button("🔍 Find Jobs"):
                         {label} • Match Score: {job['score']:.2f}%
                     </p>
 
-                    <a href="{job['link']}" target="_blank" class="apply-btn">
+                    <a href="{job['link']}" target="_blank" style="
+                        display:inline-block;
+                        margin-top:10px;
+                        background: linear-gradient(90deg, #4F46E5, #7C3AED);
+                        padding:10px 18px;
+                        border-radius:8px;
+                        color:white;
+                        text-decoration:none;
+                        font-weight:bold;
+                    ">
                         🚀 Apply Now
                     </a>
                 </div>
-                """
+                """, unsafe_allow_html=True)
 
-                st.markdown(html, unsafe_allow_html=True)  # ✅ FIXED
-
-            # 📩 EMAIL
+            # EMAIL
             send_email(top_jobs, receiver=email)
 
             st.success("📩 Jobs sent to your email!")
