@@ -4,8 +4,8 @@ from tavily import TavilyClient
 
 # 🔐 ADD YOUR API KEYS
 TAVILY_API_KEY = st.secrets["TAVILY_API_KEY"]
-ADZUNA_APP_ID = st.secrets["TAVILY_API_KEY"]
-ADZUNA_APP_KEY = st.secrets["ADZUNA_APP_ID"]
+ADZUNA_APP_ID = st.secrets["ADZUNA_APP_ID"]
+ADZUNA_APP_KEY = st.secrets["ADZUNA_API_KEY"]
 
 tavily = TavilyClient(api_key=TAVILY_API_KEY)
 
