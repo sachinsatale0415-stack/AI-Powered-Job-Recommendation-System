@@ -94,6 +94,11 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # 🔥 BUTTON
 if st.button("🔍 Find Jobs"):
+    st.write("DEBUG: Job Title =", job_title)
+
+    jobs = fetch_jobs(job_title)
+
+    st.write("DEBUG: Jobs fetched =", jobs)
 
     if not uploaded_file or not email:
         st.warning("Please upload resume and enter email")
@@ -125,7 +130,7 @@ if st.button("🔍 Find Jobs"):
 
                 # 🔥 EXPERIENCE DETECTION
                 is_fresher = any(x in description for x in [
-                    "fresher", "0-1", "0 to 1", "entry level", "junior", "graduate"
+                    "fresher", "0-1", "0 to 1", "entry level", "junior", "graduate","trainee","intern"
                 ])
 
                 is_senior = any(x in description for x in [
