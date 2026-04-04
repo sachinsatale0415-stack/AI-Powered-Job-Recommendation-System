@@ -20,7 +20,7 @@ def get_base64(file_path):
 bg_image = get_base64("assets/bg.png")
 
 
-# 🔥 CUSTOM UI CSS
+# 🔥 CSS
 st.markdown(f"""
 <style>
 .stApp {{
@@ -33,7 +33,7 @@ st.markdown(f"""
 .title {{
     text-align: center;
     color: black;
-    font-size: 42px;
+    font-size: 40px;
     font-weight: bold;
 }}
 
@@ -75,22 +75,15 @@ st.markdown("<br>", unsafe_allow_html=True)
 # 🔹 INPUT SECTION
 st.markdown('<div class="section">', unsafe_allow_html=True)
 
-st.subheader("📤 Upload Your Resume")
-uploaded_file = st.file_uploader("", type=["pdf"])
-
-st.subheader("💼 Job Title")
-job_title = st.text_input("", placeholder="e.g. Data Analyst")
-
-st.subheader("📧 Enter Your Email")
-email = st.text_input("", placeholder="your@email.com")
+uploaded_file = st.file_uploader("📤 Upload Resume (PDF)", type=["pdf"])
+job_title = st.text_input("💼 Job Title", placeholder="e.g. Data Analyst")
+email = st.text_input("📧 Email", placeholder="your@email.com")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
 
-# 🔥 BUTTON CLICK
+# 🔍 BUTTON
 if st.button("🔍 Find Jobs"):
-
-    # ❌ REMOVE DEBUG (clean UI)
 
     if not uploaded_file or not email:
         st.warning("Please upload resume and enter email")
@@ -104,7 +97,7 @@ if st.button("🔍 Find Jobs"):
                 file_path = tmp.name
 
             # EXTRACT TEXT
-            text = extract_text_from_pdf(file_path)
+            resume_text = extract_text_from_pdf(file_path).lower()
 
             if not job_title:
                 job_title = "software developer"
@@ -115,11 +108,12 @@ if st.button("🔍 Find Jobs"):
             matched_jobs = []
 
             for job in jobs:
-                description = job["description"].lower()
+                description = job.get("description", "").lower()
 
-                score = calculate_match(text.lower(), description)
+                # 🔥 MATCH SCORE
+                score = calculate_match(resume_text, description)
 
-                # 🔥 EXPERIENCE FILTER
+                # 🔥 FILTER EXPERIENCE
                 is_fresher = any(x in description for x in [
                     "fresher", "0-1", "entry level", "junior", "graduate", "intern"
                 ])
@@ -132,30 +126,30 @@ if st.button("🔍 Find Jobs"):
                 if is_senior and not is_fresher:
                     continue
 
-                # 🔥 BOOSTS
+                # 🔥 BOOSTING
                 if is_fresher:
                     score += 15
 
                 if job_title.lower() in job["title"].lower():
                     score += 10
 
+                # ❌ REMOVE BAD LINKS
+                if not job.get("link") or job["link"] == "#":
+                    continue
+
                 matched_jobs.append({
                     "title": job["title"],
                     "company": job["company"],
                     "score": score,
-                    "link": job.get("link", "#")
+                    "link": job["link"]
                 })
 
-            # 🔥 SORT BY SCORE
-            matched_jobs = sorted(
-                matched_jobs,
-                key=lambda x: x["score"],
-                reverse=True
-            )
+            # 🔥 SORT
+            matched_jobs = sorted(matched_jobs, key=lambda x: x["score"], reverse=True)
 
             top_jobs = matched_jobs[:10]
 
-        # 🎯 SHOW RESULTS (CLEAN)
+        # 🎯 RESULTS
         st.markdown("## 🎯 Top Results")
 
         if not top_jobs:
@@ -175,7 +169,7 @@ if st.button("🔍 Find Jobs"):
                     color = "#ff6b6b"
                     label = "⚠️ Low Match"
 
-                st.markdown(f"""
+                html = f"""
                 <div class="job-card">
                     <h3>{job['title']}</h3>
                     <p><b>{job['company']}</b></p>
@@ -188,9 +182,11 @@ if st.button("🔍 Find Jobs"):
                         🚀 Apply Now
                     </a>
                 </div>
-                """, unsafe_allow_html=True)
+                """
 
-            # 📩 SEND EMAIL
+                st.markdown(html, unsafe_allow_html=True)  # ✅ FIXED
+
+            # 📩 EMAIL
             send_email(top_jobs, receiver=email)
 
             st.success("📩 Jobs sent to your email!")
