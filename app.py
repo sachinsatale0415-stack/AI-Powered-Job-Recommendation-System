@@ -1,6 +1,7 @@
 import streamlit as st
 import tempfile
 import base64
+import re
 
 from app.resume.parser import extract_text_from_pdf
 from app.jobs.fetcher import fetch_jobs
@@ -10,6 +11,13 @@ from app.notifications.email import send_email
 
 # 🔥 PAGE CONFIG
 st.set_page_config(page_title="JobBuddy AI", layout="wide")
+
+
+# 🔥 CLEAN HTML FUNCTION (IMPORTANT FIX)
+def clean_html(text):
+    if not text:
+        return ""
+    return re.sub('<.*?>', '', text)
 
 
 # 🔥 BACKGROUND IMAGE
@@ -97,7 +105,7 @@ if st.button("🔍 Find Jobs"):
             matched_jobs = []
 
             for job in jobs:
-                description = job.get("description", "").lower()
+                description = clean_html(job.get("description", "").lower())
 
                 score = calculate_match(resume_text, description)
 
@@ -126,8 +134,8 @@ if st.button("🔍 Find Jobs"):
                     continue
 
                 matched_jobs.append({
-                    "title": job["title"],
-                    "company": job["company"],
+                    "title": clean_html(job["title"]),
+                    "company": clean_html(job["company"]),
                     "score": score,
                     "link": job["link"]
                 })
@@ -157,7 +165,6 @@ if st.button("🔍 Find Jobs"):
                     color = "#ff6b6b"
                     label = "⚠️ Low Match"
 
-                # ✅ DIRECT RENDER (NO VARIABLE, NO st.write)
                 st.markdown(f"""
                 <div class="job-card">
                     <h3>{job['title']}</h3>

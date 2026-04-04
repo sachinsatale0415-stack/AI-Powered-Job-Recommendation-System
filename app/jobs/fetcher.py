@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import re
 from tavily import TavilyClient
 
 # 🔐 API KEYS
@@ -10,38 +11,53 @@ ADZUNA_APP_KEY = st.secrets["ADZUNA_APP_KEY"]
 tavily = TavilyClient(api_key=TAVILY_API_KEY)
 
 
-# 🔹 FETCH FROM TAVILY
+# 🔥 CLEAN HTML FUNCTION
+def clean_html(text):
+    if not text:
+        return ""
+    return re.sub('<.*?>', '', text)
+
+
+# 🔹 FETCH FROM TAVILY (CLEANED)
 def fetch_from_tavily(job_title):
     query = f"{job_title} fresher OR entry level OR junior jobs India"
 
     try:
         response = tavily.search(query=query, max_results=10)
-        print("Tavily Raw Results:", len(response.get("results", [])))
+        print("Tavily Results:", len(response.get("results", [])))
     except Exception as e:
-        print("❌ Tavily Error:", e)
+        print("Tavily Error:", e)
         return []
 
     jobs = []
 
     for r in response.get("results", []):
-        title = r.get("title", "").lower()
+        title = clean_html(r.get("title", "")).lower()
+        url = r.get("url", "")
 
-        # ❗ Only remove obvious bulk pages
-        if any(x in title for x in ["100", "200", "bulk hiring"]):
+        # ❌ REMOVE AGGREGATED / LISTING PAGES
+        if any(x in title for x in [
+            "jobs in", "jobs -", "jobs |", "vacancies",
+            "glassdoor", "linkedin jobs", "naukri jobs",
+            "wellfound", "foundit", "list of jobs"
+        ]):
+            continue
+
+        # ❌ REMOVE INVALID LINKS
+        if not url or "jobs" in url and "search" in url:
             continue
 
         jobs.append({
-            "title": r.get("title", "Unknown Role"),
+            "title": clean_html(r.get("title", "Unknown Role")),
             "company": "From Web",
-            "description": r.get("content", ""),
-            "link": r.get("url", "#")
+            "description": "",  # 🔥 REMOVE DIRTY CONTENT COMPLETELY
+            "link": url
         })
 
-    print("✅ Tavily Clean Jobs:", len(jobs))
     return jobs
 
 
-# 🔹 FETCH FROM ADZUNA (MAIN SOURCE)
+# 🔹 FETCH FROM ADZUNA (BEST SOURCE)
 def fetch_from_adzuna(job_title):
     url = "https://api.adzuna.com/v1/api/jobs/in/search/1"
 
@@ -49,50 +65,50 @@ def fetch_from_adzuna(job_title):
         "app_id": ADZUNA_APP_ID,
         "app_key": ADZUNA_APP_KEY,
         "results_per_page": 15,
-        "what": job_title,   # 🔥 removed "fresher" for broader results
+        "what": job_title,
         "where": "India"
     }
 
     try:
         response = requests.get(url, params=params, timeout=10)
 
-        print("\n🔵 Adzuna Status:", response.status_code)
-        print("🔗 URL:", response.url)
+        print("Adzuna Status:", response.status_code)
 
         if response.status_code != 200:
-            print("❌ Adzuna Error Response:", response.text)
+            print("Adzuna Error:", response.text)
             return []
 
         data = response.json()
         results = data.get("results", [])
 
-        print("📊 Total Jobs Found:", len(results))
+        print("Adzuna Jobs Found:", len(results))
 
     except Exception as e:
-        print("❌ Adzuna Exception:", e)
+        print("Adzuna Exception:", e)
         return []
 
     jobs = []
 
     for j in results:
-        description = j.get("description", "").lower()
+        description = clean_html(j.get("description", "").lower())
 
-        # ✅ Light filtering (not aggressive)
-        if "7+ years" in description or "10+ years" in description:
+        # ❌ REMOVE SENIOR ROLES
+        if any(x in description for x in [
+            "7+ years", "10+ years", "senior manager"
+        ]):
             continue
 
         jobs.append({
-            "title": j.get("title", "Unknown Role"),
-            "company": j.get("company", {}).get("display_name", "Unknown"),
-            "description": j.get("description", ""),
+            "title": clean_html(j.get("title", "Unknown Role")),
+            "company": clean_html(j.get("company", {}).get("display_name", "Unknown")),
+            "description": description,
             "link": j.get("redirect_url", "#")
         })
 
-    print("✅ Adzuna Clean Jobs:", len(jobs))
     return jobs
 
 
-# 🔹 REMOVE DUPLICATES (IMPROVED)
+# 🔹 REMOVE DUPLICATES
 def remove_duplicates(jobs):
     unique_jobs = []
     seen = set()
@@ -109,17 +125,17 @@ def remove_duplicates(jobs):
 
 # 🔹 MAIN FUNCTION
 def fetch_jobs(job_title):
-    print(f"\n🚀 Fetching jobs for: {job_title}")
+    print(f"\nFetching jobs for: {job_title}")
 
     adzuna_jobs = fetch_from_adzuna(job_title)
     tavily_jobs = fetch_from_tavily(job_title)
 
     all_jobs = adzuna_jobs + tavily_jobs
 
-    print("🔄 Total Before Dedup:", len(all_jobs))
+    print("Before Dedup:", len(all_jobs))
 
     unique_jobs = remove_duplicates(all_jobs)
 
-    print("✅ Final Jobs After Dedup:", len(unique_jobs))
+    print("Final Jobs:", len(unique_jobs))
 
     return unique_jobs
