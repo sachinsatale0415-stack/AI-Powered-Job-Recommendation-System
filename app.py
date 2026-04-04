@@ -9,7 +9,7 @@ from app.notifications.email import send_email
 
 
 # 🔥 PAGE CONFIG
-st.set_page_config(page_title="Search Jobs with Piyu", layout="wide")
+st.set_page_config(page_title="JobBuddy AI", layout="wide")
 
 
 # 🔥 LOAD BACKGROUND IMAGE
@@ -73,7 +73,7 @@ st.markdown(f"""
 
 
 # 🔥 HEADER
-st.markdown('<div class="title">🚀 Search Jobs with Piyu </div>', unsafe_allow_html=True)
+st.markdown('<div class="title">🚀 JobBuddy AI - Smart Job Recommendation System </div>', unsafe_allow_html=True)
 st.write("")
 
 
