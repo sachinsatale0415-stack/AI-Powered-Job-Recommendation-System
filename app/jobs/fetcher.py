@@ -1,10 +1,11 @@
+import streamlit as st
 import requests
 from tavily import TavilyClient
 
 # 🔐 ADD YOUR API KEYS
-TAVILY_API_KEY = "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"
-ADZUNA_APP_ID = "85744f45"
-ADZUNA_APP_KEY = "0759887ee17572a6515252855569f2ce"
+TAVILY_API_KEY = st.secrets["TAVILY_API_KEY"]
+ADZUNA_APP_ID = st.secrets["TAVILY_API_KEY"]
+ADZUNA_APP_KEY = st.secrets["ADZUNA_APP_ID"]
 
 tavily = TavilyClient(api_key=TAVILY_API_KEY)
 
