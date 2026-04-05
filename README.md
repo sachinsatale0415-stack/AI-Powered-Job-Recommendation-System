@@ -14,10 +14,15 @@ The primary objective of JobBuddy AI is to simplify and optimize the job search 
 This project aims to:
 
 • 🔍 Analyze candidate resumes to understand their skills, domain, and interests
+
 • 🤖 Automatically fetch relevant job opportunities from multiple platforms
+
 • 🎯 Match candidate profiles with job descriptions using AI-based scoring
+
 • 🚫 Filter out irrelevant or senior-level roles not suitable for freshers
+
 • 📊 Rank job opportunities based on relevance and match percentage
+
 • 📩 Provide personalized job recommendations directly to the user via UI and email
 
 By achieving these objectives, the system reduces manual effort, improves job discovery efficiency, and increases the chances of freshers finding roles that truly match their skills and career goals.
