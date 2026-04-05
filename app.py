@@ -45,6 +45,14 @@ st.markdown(f"""
     font-weight: bold;
 }}
 
+.subtitle {{
+    text-align: center;
+    color: #444;
+    font-size: 18px;
+    margin-top: -10px;
+    margin-bottom: 20px;
+}}
+
 .section {{
     background: rgba(0,0,0,0.6);
     padding: 25px;
@@ -57,6 +65,10 @@ st.markdown(f"""
 
 # 🔥 HEADER
 st.markdown('<div class="title">🚀 JobBuddy AI</div>', unsafe_allow_html=True)
+
+# ✅ NEW SUBHEADER (ONLY ADDITION)
+st.markdown('<div class="subtitle">Find the best jobs tailored to your resume using AI</div>', unsafe_allow_html=True)
+
 st.markdown("<br>", unsafe_allow_html=True)
 
 
@@ -157,13 +169,12 @@ if st.button("🔍 Find Jobs"):
                 else:
                     label = "⚠️ Low Match"
 
-                # ✅ CLEAN CARD (NO HTML BUGS)
+                # ✅ CLEAN CARD
                 with st.container():
                     st.markdown(f"### {job['title']}")
                     st.caption(job["company"])
                     st.success(f"{label} • Match Score: {job['score']:.2f}%")
 
-                    # ✅ PERFECT BUTTON (NO HTML)
                     st.link_button("🚀 Apply Now", job["link"])
 
                     st.markdown("---")
