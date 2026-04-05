@@ -9,69 +9,153 @@ from app.matching.matcher import calculate_match
 from app.notifications.email import send_email
 
 
-# 🔥 PAGE CONFIG
+# PAGE CONFIG
 st.set_page_config(page_title="JobBuddy AI", layout="wide")
 
 
-# 🔥 CLEAN HTML FUNCTION
+# CLEAN HTML
 def clean_html(text):
     if not text:
         return ""
     return re.sub('<.*?>', '', text)
 
 
-# 🔥 BACKGROUND IMAGE
-def get_base64(file_path):
-    with open(file_path, "rb") as f:
+# LOAD BG
+def get_base64(file):
+    with open(file, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-bg_image = get_base64("assets/bg.png")
+bg = get_base64("assets/bg.png")
 
 
-# 🔥 CSS
+# 🔥 FINAL CSS
 st.markdown(f"""
 <style>
+
+/* BACKGROUND */
 .stApp {{
-    background-image: url("data:image/png;base64,{bg_image}");
+    background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.75)),
+                url("data:image/png;base64,{bg}");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
 }}
 
-.title {{
-    text-align: center;
-    color: black;
-    font-size: 42px;
-    font-weight: bold;
+/* CENTER */
+.container {{
+    width: 480px;
+    margin: auto;
+    margin-top: 50px;
 }}
 
-.section {{
-    background: rgba(0,0,0,0.6);
-    padding: 25px;
-    border-radius: 15px;
-    margin-bottom: 20px;
+/* TITLE */
+.title {{
+    text-align:center;
+    color:white;
+    font-size:42px;
+    font-weight:bold;
 }}
+
+.subtitle {{
+    text-align:center;
+    color:#ccc;
+    margin-bottom:30px;
+}}
+
+/* GLASS CARD */
+.card {{
+    background: rgba(255,255,255,0.08);
+    padding:20px;
+    border-radius:15px;
+    backdrop-filter: blur(15px);
+    border:1px solid rgba(255,255,255,0.2);
+    margin-bottom:20px;
+}}
+
+/* LABEL */
+.label {{
+    color:white;
+    margin-bottom:8px;
+}}
+
+/* INPUT FIX */
+.stTextInput input {{
+    background: rgba(255,255,255,0.08) !important;
+    color:white !important;
+    border-radius:10px !important;
+    border:1px solid rgba(255,255,255,0.2) !important;
+}}
+
+/* HIDE DEFAULT UPLOADER TEXT */
+.stFileUploader label {{
+    display:none;
+}}
+
+/* CUSTOM DROP BOX */
+.upload-box {{
+    border:2px dashed rgba(255,255,255,0.3);
+    padding:25px;
+    text-align:center;
+    border-radius:10px;
+    color:#ccc;
+    margin-bottom:10px;
+}}
+
+/* BUTTON */
+div.stButton > button {{
+    background: linear-gradient(90deg,#4F46E5,#7C3AED);
+    color:white;
+    padding:14px;
+    border-radius:12px;
+    font-size:18px;
+    border:none;
+    width:100%;
+}}
+
 </style>
 """, unsafe_allow_html=True)
 
 
-# 🔥 HEADER
+# 🔥 UI START
+st.markdown('<div class="container">', unsafe_allow_html=True)
+
 st.markdown('<div class="title">🚀 JobBuddy AI</div>', unsafe_allow_html=True)
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Find the best jobs tailored to your resume using AI</div>', unsafe_allow_html=True)
 
 
-# 🔹 INPUT SECTION
-st.markdown('<div class="section">', unsafe_allow_html=True)
+# 📤 UPLOAD (HYBRID)
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('<div class="label">📤 Upload Resume</div>', unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader("📤 Upload Resume", type=["pdf"])
-job_title = st.text_input("💼 Job Title", placeholder="Data Analyst")
-email = st.text_input("📧 Email", placeholder="your@email.com")
+st.markdown('<div class="upload-box">📂 Drag & Drop your PDF here<br><small>or click below</small></div>', unsafe_allow_html=True)
+
+uploaded_file = st.file_uploader("", type=["pdf"])
 
 st.markdown('</div>', unsafe_allow_html=True)
 
 
-# 🔍 BUTTON
-if st.button("🔍 Find Jobs"):
+# 💼 JOB TITLE
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('<div class="label">💼 Job Title</div>', unsafe_allow_html=True)
+job_title = st.text_input("", placeholder="e.g. Data Analyst")
+st.markdown('</div>', unsafe_allow_html=True)
+
+
+# 📧 EMAIL
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('<div class="label">📧 Email</div>', unsafe_allow_html=True)
+email = st.text_input("", placeholder="your@email.com")
+st.markdown('</div>', unsafe_allow_html=True)
+
+
+# 🚀 BUTTON
+find = st.button("🚀 Find Jobs")
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+
+# 🔍 LOGIC
+if find:
 
     if not uploaded_file or not email:
         st.warning("Please upload resume and enter email")
@@ -79,48 +163,23 @@ if st.button("🔍 Find Jobs"):
     else:
         with st.spinner("🤖 AI is analyzing your resume..."):
 
-            # SAVE FILE
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                 tmp.write(uploaded_file.read())
                 file_path = tmp.name
 
-            # EXTRACT TEXT
             resume_text = extract_text_from_pdf(file_path).lower()
 
             if not job_title:
                 job_title = "software developer"
 
-            # FETCH JOBS
             jobs = fetch_jobs(job_title)
 
             matched_jobs = []
 
             for job in jobs:
                 description = clean_html(job.get("description", "").lower())
-
                 score = calculate_match(resume_text, description)
 
-                # FILTER EXPERIENCE
-                is_fresher = any(x in description for x in [
-                    "fresher", "0-1", "entry level", "junior", "intern"
-                ])
-
-                is_senior = any(x in description for x in [
-                    "3+ years", "5+ years", "7+ years",
-                    "senior", "lead", "manager"
-                ])
-
-                if is_senior and not is_fresher:
-                    continue
-
-                # BOOST
-                if is_fresher:
-                    score += 15
-
-                if job_title.lower() in job["title"].lower():
-                    score += 10
-
-                # SKIP BAD LINKS
                 if not job.get("link") or job["link"] == "#":
                     continue
 
@@ -131,44 +190,16 @@ if st.button("🔍 Find Jobs"):
                     "link": job["link"]
                 })
 
-            # SORT
-            matched_jobs = sorted(
-                matched_jobs,
-                key=lambda x: x["score"],
-                reverse=True
-            )
+            matched_jobs = sorted(matched_jobs, key=lambda x: x["score"], reverse=True)
 
-            top_jobs = matched_jobs[:10]
-
-        # 🎯 RESULTS
         st.markdown("## 🎯 Top Results")
 
-        if not top_jobs:
-            st.error("No jobs found 😢")
+        for job in matched_jobs[:10]:
+            st.markdown(f"### {job['title']}")
+            st.caption(job["company"])
+            st.success(f"Match Score: {job['score']:.2f}%")
+            st.link_button("🚀 Apply Now", job["link"])
+            st.markdown("---")
 
-        else:
-            for job in top_jobs:
-
-                # 🎯 SCORE BADGE
-                if job["score"] >= 70:
-                    label = "🔥 High Match"
-                elif job["score"] >= 50:
-                    label = "⭐ Good Match"
-                else:
-                    label = "⚠️ Low Match"
-
-                # ✅ CLEAN CARD (NO HTML BUGS)
-                with st.container():
-                    st.markdown(f"### {job['title']}")
-                    st.caption(job["company"])
-                    st.success(f"{label} • Match Score: {job['score']:.2f}%")
-
-                    # ✅ PERFECT BUTTON (NO HTML)
-                    st.link_button("🚀 Apply Now", job["link"])
-
-                    st.markdown("---")
-
-            # 📩 EMAIL
-            send_email(top_jobs, receiver=email)
-
-            st.success("📩 Jobs sent to your email!")
+        send_email(matched_jobs[:10], receiver=email)
+        st.success("📩 Jobs sent to your email!")
