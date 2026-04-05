@@ -9,18 +9,18 @@ from app.matching.matcher import calculate_match
 from app.notifications.email import send_email
 
 
-# 🔥 PAGE CONFIG
+# PAGE CONFIG
 st.set_page_config(page_title="JobBuddy AI", layout="wide")
 
 
-# 🔥 CLEAN HTML
+# CLEAN HTML
 def clean_html(text):
     if not text:
         return ""
     return re.sub('<.*?>', '', text)
 
 
-# 🔥 LOAD BACKGROUND
+# LOAD BG
 def get_base64(file):
     with open(file, "rb") as f:
         return base64.b64encode(f.read()).decode()
@@ -28,101 +28,88 @@ def get_base64(file):
 bg = get_base64("assets/bg.png")
 
 
-# 🔥 FINAL CLOUD-PROOF CSS
+# 🔥 FINAL CSS
 st.markdown(f"""
 <style>
-
-/* REMOVE DEFAULT WHITE */
-html, body, [class*="css"] {{
-    background: transparent !important;
-}}
 
 /* BACKGROUND */
 .stApp {{
     background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.75)),
-                url("data:image/png;base64,{bg}") !important;
-    background-size: cover !important;
-    background-position: center !important;
-    background-attachment: fixed !important;
+                url("data:image/png;base64,{bg}");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }}
 
-/* CENTER CONTAINER */
-.main-container {{
+/* CENTER */
+.container {{
     width: 480px;
     margin: auto;
-    margin-top: 60px;
+    margin-top: 50px;
 }}
 
 /* TITLE */
 .title {{
-    text-align: center;
-    color: white;
-    font-size: 42px;
-    font-weight: bold;
+    text-align:center;
+    color:white;
+    font-size:42px;
+    font-weight:bold;
 }}
 
 .subtitle {{
-    text-align: center;
-    color: #ccc;
-    margin-bottom: 30px;
+    text-align:center;
+    color:#ccc;
+    margin-bottom:30px;
 }}
 
 /* GLASS CARD */
-.glass {{
-    background: rgba(255,255,255,0.08) !important;
-    padding: 20px !important;
-    border-radius: 15px !important;
-    backdrop-filter: blur(15px) !important;
-    border: 1px solid rgba(255,255,255,0.2) !important;
-    margin-bottom: 20px !important;
+.card {{
+    background: rgba(255,255,255,0.08);
+    padding:20px;
+    border-radius:15px;
+    backdrop-filter: blur(15px);
+    border:1px solid rgba(255,255,255,0.2);
+    margin-bottom:20px;
 }}
 
 /* LABEL */
 .label {{
-    color: white !important;
-    font-size: 15px !important;
-    margin-bottom: 8px !important;
+    color:white;
+    margin-bottom:8px;
 }}
 
-/* INPUTS FIX */
-input {{
+/* INPUT FIX */
+.stTextInput input {{
     background: rgba(255,255,255,0.08) !important;
-    color: white !important;
-    border-radius: 10px !important;
-    border: 1px solid rgba(255,255,255,0.2) !important;
+    color:white !important;
+    border-radius:10px !important;
+    border:1px solid rgba(255,255,255,0.2) !important;
 }}
 
-.stTextInput > div > div > input {{
-    background: rgba(255,255,255,0.08) !important;
-    color: white !important;
+/* HIDE DEFAULT UPLOADER TEXT */
+.stFileUploader label {{
+    display:none;
 }}
 
-/* FILE UPLOADER FIX */
-.stFileUploader > div {{
-    background: rgba(255,255,255,0.05) !important;
-    border: 1px dashed rgba(255,255,255,0.3) !important;
-    border-radius: 12px !important;
-    padding: 15px !important;
-}}
-
-.stFileUploader div div {{
-    background: transparent !important;
+/* CUSTOM DROP BOX */
+.upload-box {{
+    border:2px dashed rgba(255,255,255,0.3);
+    padding:25px;
+    text-align:center;
+    border-radius:10px;
+    color:#ccc;
+    margin-bottom:10px;
 }}
 
 /* BUTTON */
 div.stButton > button {{
-    background: linear-gradient(90deg, #4F46E5, #7C3AED) !important;
-    color: white !important;
-    padding: 14px !important;
-    border-radius: 12px !important;
-    font-size: 18px !important;
-    border: none !important;
-    width: 100% !important;
-}}
-
-div.stButton > button:hover {{
-    transform: scale(1.05);
-    transition: 0.2s;
+    background: linear-gradient(90deg,#4F46E5,#7C3AED);
+    color:white;
+    padding:14px;
+    border-radius:12px;
+    font-size:18px;
+    border:none;
+    width:100%;
 }}
 
 </style>
@@ -130,28 +117,32 @@ div.stButton > button:hover {{
 
 
 # 🔥 UI START
-st.markdown('<div class="main-container">', unsafe_allow_html=True)
+st.markdown('<div class="container">', unsafe_allow_html=True)
 
 st.markdown('<div class="title">🚀 JobBuddy AI</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Find the best jobs tailored to your resume using AI</div>', unsafe_allow_html=True)
 
 
-# 📤 Upload Resume
-st.markdown('<div class="glass">', unsafe_allow_html=True)
+# 📤 UPLOAD (HYBRID)
+st.markdown('<div class="card">', unsafe_allow_html=True)
 st.markdown('<div class="label">📤 Upload Resume</div>', unsafe_allow_html=True)
+
+st.markdown('<div class="upload-box">📂 Drag & Drop your PDF here<br><small>or click below</small></div>', unsafe_allow_html=True)
+
 uploaded_file = st.file_uploader("", type=["pdf"])
+
 st.markdown('</div>', unsafe_allow_html=True)
 
 
-# 💼 Job Title
-st.markdown('<div class="glass">', unsafe_allow_html=True)
+# 💼 JOB TITLE
+st.markdown('<div class="card">', unsafe_allow_html=True)
 st.markdown('<div class="label">💼 Job Title</div>', unsafe_allow_html=True)
 job_title = st.text_input("", placeholder="e.g. Data Analyst")
 st.markdown('</div>', unsafe_allow_html=True)
 
 
-# 📧 Email
-st.markdown('<div class="glass">', unsafe_allow_html=True)
+# 📧 EMAIL
+st.markdown('<div class="card">', unsafe_allow_html=True)
 st.markdown('<div class="label">📧 Email</div>', unsafe_allow_html=True)
 email = st.text_input("", placeholder="your@email.com")
 st.markdown('</div>', unsafe_allow_html=True)
@@ -163,7 +154,7 @@ find = st.button("🚀 Find Jobs")
 st.markdown('</div>', unsafe_allow_html=True)
 
 
-# 🔍 LOGIC (UNCHANGED)
+# 🔍 LOGIC
 if find:
 
     if not uploaded_file or not email:
