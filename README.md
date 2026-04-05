@@ -122,7 +122,7 @@ ADZUNA_APP_ID="your_id"
 ADZUNA_APP_KEY="your_key"
 
 ## 📊 Results / Output
-As soon as you upload the Resume, job title ans your email you will get the results and also get the email from my ai syatem whoes email is - projectgroup5.vita@gmail.com
+As soon as you upload the Resume, job title ans your email you will get the results and also get the email from my ai syatem whoes email is - jobbyddys.ai@gmail.com
 
 <img width="1919" height="740" alt="image" src="https://github.com/user-attachments/assets/fca0cde2-8739-433f-863a-747ea7ba6433" />
 
