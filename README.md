@@ -51,3 +51,86 @@ Using semantic similarity techniques, the system compares the resume content wit
 • 📩 Email Notifications
 
 • ⚡ Clean Interactive UI (Streamlit)
+
+## 🏗️ Architecture
+
+• Frontend: Streamlit
+
+• Backend: Python
+
+• Resume Parsing: pdfplumber
+
+• AI Matching: sentence-transformers
+
+• Job APIs: Tavily + Adzuna
+
+## 🔄 Workflow
+
+1. Upload Resume
+
+2. Extract Text
+
+3. Fetch Jobs
+
+4. Match Resume with Jobs
+
+5. Rank by Score
+
+6. Display Top Results
+
+7. Send Email
+
+## 🛠️ Tech Stack
+
+• Python
+
+• Streamlit
+
+• NLP (Sentence Transformers)
+
+• REST APIs
+
+• AWS-ready architecture (scalable)
+
+## 📸 UI Preview
+<img width="1919" height="741" alt="image" src="https://github.com/user-attachments/assets/e4a3af38-e967-40fd-ba71-c831ede0a6c3" />
+
+<img width="1919" height="787" alt="image" src="https://github.com/user-attachments/assets/c02380ae-fdb1-40a2-a4c3-022fc8fd2dfd" />
+
+<img width="1919" height="792" alt="image" src="https://github.com/user-attachments/assets/05d370b2-3469-427a-a408-d5ffe3284b48" />
+
+<img width="1919" height="738" alt="image" src="https://github.com/user-attachments/assets/cc773829-4f53-462f-b910-3f539556ec86" />
+
+
+## 🚀 How to Run
+
+git clone https://github.com/sachinsatale0415-stack/AI-Powered-Job-Recommendation-System
+cd jobbuddy-ai
+pip install -r requirements.txt
+streamlit run app.py
+
+## 🔐 Setup
+
+Add API keys in .streamlit/secrets.toml:
+
+TAVILY_API_KEY="your_key"
+
+ADZUNA_APP_ID="your_id"
+
+ADZUNA_APP_KEY="your_key"
+
+## 🎯 Future Improvements
+
+• LinkedIn API Integration
+
+• Auto Apply Feature
+
+• Resume Optimization Suggestions
+
+• AI Career Guidance Bot
+
+## 👨‍💻 Author
+
+Sachin Satale
+
+Aspiring AI Engineer | Data Analyst | ML Enthusiast
