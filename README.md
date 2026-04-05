@@ -97,16 +97,18 @@ Using semantic similarity techniques, the system compares the resume content wit
 
 <img width="1919" height="787" alt="image" src="https://github.com/user-attachments/assets/c02380ae-fdb1-40a2-a4c3-022fc8fd2dfd" />
 
-<img width="1919" height="792" alt="image" src="https://github.com/user-attachments/assets/05d370b2-3469-427a-a408-d5ffe3284b48" />
-
 <img width="1919" height="738" alt="image" src="https://github.com/user-attachments/assets/cc773829-4f53-462f-b910-3f539556ec86" />
 
+<img width="1919" height="792" alt="image" src="https://github.com/user-attachments/assets/05d370b2-3469-427a-a408-d5ffe3284b48" />
 
 ## 🚀 How to Run
 
 git clone https://github.com/sachinsatale0415-stack/AI-Powered-Job-Recommendation-System
+
 cd jobbuddy-ai
+
 pip install -r requirements.txt
+
 streamlit run app.py
 
 ## 🔐 Setup
