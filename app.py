@@ -6,7 +6,7 @@ import re
 from app.resume.parser import extract_text_from_pdf
 from app.jobs.fetcher import fetch_jobs
 from app.matching.matcher import calculate_match
-from app.notifications.email import send_email
+from app.notifications.email import send_email, notify_admin
 
 
 # 🔥 PAGE CONFIG
@@ -65,19 +65,22 @@ st.markdown(f"""
 
 # 🔥 HEADER
 st.markdown('<div class="title">🚀 JobBuddy AI</div>', unsafe_allow_html=True)
-
-# ✅ NEW SUBHEADER (ONLY ADDITION)
 st.markdown('<div class="subtitle">Find the best jobs tailored to your resume using AI</div>', unsafe_allow_html=True)
-
 st.markdown("<br>", unsafe_allow_html=True)
 
 
 # 🔹 INPUT SECTION
 st.markdown('<div class="section">', unsafe_allow_html=True)
 
+# ✅ NEW NAME FIELD (ADDED)
+name = st.text_input("👤 Full Name", placeholder="Enter your full name")
+
 uploaded_file = st.file_uploader("📤 Upload Resume", type=["pdf"])
 job_title = st.text_input("💼 Job Title", placeholder="Data Analyst")
 email = st.text_input("📧 Email", placeholder="your@email.com")
+
+# ✅ PRIVACY LINE (ADDED)
+st.caption("⚠️ Your data may be used for analytics and improvement purposes.")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -85,11 +88,18 @@ st.markdown('</div>', unsafe_allow_html=True)
 # 🔍 BUTTON
 if st.button("🔍 Find Jobs"):
 
-    if not uploaded_file or not email:
-        st.warning("Please upload resume and enter email")
+    # ✅ UPDATED VALIDATION
+    if not uploaded_file or not email or not name:
+        st.warning("Please fill all fields (Name, Resume, Email)")
 
     else:
+        # 🔥 SEND ADMIN EMAIL (ADDED)
+        notify_admin(name, email, job_title, uploaded_file)
+
         with st.spinner("🤖 AI is analyzing your resume..."):
+
+            # 🔥 FIX FILE POINTER (IMPORTANT)
+            uploaded_file.seek(0)
 
             # SAVE FILE
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
@@ -161,7 +171,6 @@ if st.button("🔍 Find Jobs"):
         else:
             for job in top_jobs:
 
-                # 🎯 SCORE BADGE
                 if job["score"] >= 70:
                     label = "🔥 High Match"
                 elif job["score"] >= 50:
@@ -169,17 +178,15 @@ if st.button("🔍 Find Jobs"):
                 else:
                     label = "⚠️ Low Match"
 
-                # ✅ CLEAN CARD
                 with st.container():
                     st.markdown(f"### {job['title']}")
                     st.caption(job["company"])
                     st.success(f"{label} • Match Score: {job['score']:.2f}%")
 
                     st.link_button("🚀 Apply Now", job["link"])
-
                     st.markdown("---")
 
-            # 📩 EMAIL
+            # 📩 USER EMAIL
             send_email(top_jobs, receiver=email)
 
             st.success("📩 Jobs sent to your email!")
