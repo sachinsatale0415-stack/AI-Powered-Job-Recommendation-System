@@ -121,6 +121,18 @@ ADZUNA_APP_ID="your_id"
 
 ADZUNA_APP_KEY="your_key"
 
+## 📊 Results / Output
+As soon as you upload the Resume, job title ans your email you will get the results and also get the email from my ai syatem whoes email is - projectgroup5.vita@gmail.com
+
+<img width="1919" height="740" alt="image" src="https://github.com/user-attachments/assets/fca0cde2-8739-433f-863a-747ea7ba6433" />
+
+<img width="1915" height="732" alt="image" src="https://github.com/user-attachments/assets/69c2f60f-3c7e-4a8d-9cfd-c7a29316ad83" />
+
+<img width="1919" height="930" alt="image" src="https://github.com/user-attachments/assets/5a711eb5-f5df-4656-a435-20173bf81a48" />
+
+<img width="1919" height="967" alt="image" src="https://github.com/user-attachments/assets/42954d25-f202-4156-9267-0664b5165f8c" />
+
+
 ## 🎯 Future Improvements
 
 • LinkedIn API Integration
