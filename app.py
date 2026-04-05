@@ -13,65 +13,128 @@ from app.notifications.email import send_email
 st.set_page_config(page_title="JobBuddy AI", layout="wide")
 
 
-# 🔥 CLEAN HTML FUNCTION
+# 🔥 CLEAN HTML
 def clean_html(text):
     if not text:
         return ""
     return re.sub('<.*?>', '', text)
 
 
-# 🔥 BACKGROUND IMAGE
-def get_base64(file_path):
-    with open(file_path, "rb") as f:
+# 🔥 LOAD BACKGROUND
+def get_base64(file):
+    with open(file, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-bg_image = get_base64("assets/bg.png")
+bg = get_base64("assets/bg.png")
 
 
-# 🔥 CSS
+# 🔥 GLOBAL CSS (THIS MAKES YOUR UI EXACTLY SAME)
 st.markdown(f"""
 <style>
+
+/* Background */
 .stApp {{
-    background-image: url("data:image/png;base64,{bg_image}");
+    background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.75)),
+                url("data:image/png;base64,{bg}");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
 }}
 
+/* Title */
 .title {{
     text-align: center;
-    color: black;
-    font-size: 42px;
-    font-weight: bold;
+    color: white;
+    font-size: 46px;
+    font-weight: 700;
+    margin-top: 30px;
 }}
 
-.section {{
-    background: rgba(0,0,0,0.6);
-    padding: 25px;
+.subtitle {{
+    text-align: center;
+    color: #ddd;
+    font-size: 18px;
+    margin-bottom: 40px;
+}}
+
+/* Glass Card */
+.card {{
+    width: 50%;
+    margin: auto;
+    background: rgba(255,255,255,0.08);
+    padding: 20px;
     border-radius: 15px;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.2);
     margin-bottom: 20px;
 }}
+
+/* Labels */
+.label {{
+    color: #ffffff;
+    font-size: 16px;
+    margin-bottom: 8px;
+}}
+
+/* Input Fields */
+input {{
+    background-color: rgba(255,255,255,0.1) !important;
+    color: white !important;
+}}
+
+/* Button */
+div.stButton > button {{
+    background: linear-gradient(90deg, #4F46E5, #7C3AED);
+    color: white;
+    padding: 14px 40px;
+    border-radius: 12px;
+    font-size: 18px;
+    border: none;
+    display: block;
+    margin: 20px auto;
+}}
+
+div.stButton > button:hover {{
+    transform: scale(1.05);
+    transition: 0.2s;
+}}
+
 </style>
 """, unsafe_allow_html=True)
 
 
-# 🔥 HEADER
+# 🚀 HERO SECTION
 st.markdown('<div class="title">🚀 JobBuddy AI</div>', unsafe_allow_html=True)
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Find the best jobs tailored to your resume using AI</div>', unsafe_allow_html=True)
 
 
-# 🔹 INPUT SECTION
-st.markdown('<div class="section">', unsafe_allow_html=True)
-
-uploaded_file = st.file_uploader("📤 Upload Resume", type=["pdf"])
-job_title = st.text_input("💼 Job Title", placeholder="Data Analyst")
-email = st.text_input("📧 Email", placeholder="your@email.com")
-
+# 📤 Upload Resume
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('<div class="label">📤 Upload Resume</div>', unsafe_allow_html=True)
+uploaded_file = st.file_uploader("", type=["pdf"])
 st.markdown('</div>', unsafe_allow_html=True)
 
 
-# 🔍 BUTTON
-if st.button("🔍 Find Jobs"):
+# 💼 Job Title
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('<div class="label">💼 Job Title</div>', unsafe_allow_html=True)
+job_title = st.text_input("", placeholder="e.g. Data Analyst")
+st.markdown('</div>', unsafe_allow_html=True)
+
+
+# 📧 Email
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('<div class="label">📧 Email</div>', unsafe_allow_html=True)
+email = st.text_input("", placeholder="your@email.com")
+st.markdown('</div>', unsafe_allow_html=True)
+
+
+# 🚀 BUTTON
+find = st.button("🚀 Find Jobs")
+
+
+# 🔍 LOGIC (UNCHANGED)
+if find:
 
     if not uploaded_file or not email:
         st.warning("Please upload resume and enter email")
@@ -79,18 +142,15 @@ if st.button("🔍 Find Jobs"):
     else:
         with st.spinner("🤖 AI is analyzing your resume..."):
 
-            # SAVE FILE
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                 tmp.write(uploaded_file.read())
                 file_path = tmp.name
 
-            # EXTRACT TEXT
             resume_text = extract_text_from_pdf(file_path).lower()
 
             if not job_title:
                 job_title = "software developer"
 
-            # FETCH JOBS
             jobs = fetch_jobs(job_title)
 
             matched_jobs = []
@@ -100,7 +160,6 @@ if st.button("🔍 Find Jobs"):
 
                 score = calculate_match(resume_text, description)
 
-                # FILTER EXPERIENCE
                 is_fresher = any(x in description for x in [
                     "fresher", "0-1", "entry level", "junior", "intern"
                 ])
@@ -113,14 +172,12 @@ if st.button("🔍 Find Jobs"):
                 if is_senior and not is_fresher:
                     continue
 
-                # BOOST
                 if is_fresher:
                     score += 15
 
                 if job_title.lower() in job["title"].lower():
                     score += 10
 
-                # SKIP BAD LINKS
                 if not job.get("link") or job["link"] == "#":
                     continue
 
@@ -131,16 +188,9 @@ if st.button("🔍 Find Jobs"):
                     "link": job["link"]
                 })
 
-            # SORT
-            matched_jobs = sorted(
-                matched_jobs,
-                key=lambda x: x["score"],
-                reverse=True
-            )
-
+            matched_jobs = sorted(matched_jobs, key=lambda x: x["score"], reverse=True)
             top_jobs = matched_jobs[:10]
 
-        # 🎯 RESULTS
         st.markdown("## 🎯 Top Results")
 
         if not top_jobs:
@@ -148,27 +198,11 @@ if st.button("🔍 Find Jobs"):
 
         else:
             for job in top_jobs:
+                st.markdown(f"### {job['title']}")
+                st.caption(job["company"])
+                st.success(f"Match Score: {job['score']:.2f}%")
+                st.link_button("🚀 Apply Now", job["link"])
+                st.markdown("---")
 
-                # 🎯 SCORE BADGE
-                if job["score"] >= 70:
-                    label = "🔥 High Match"
-                elif job["score"] >= 50:
-                    label = "⭐ Good Match"
-                else:
-                    label = "⚠️ Low Match"
-
-                # ✅ CLEAN CARD (NO HTML BUGS)
-                with st.container():
-                    st.markdown(f"### {job['title']}")
-                    st.caption(job["company"])
-                    st.success(f"{label} • Match Score: {job['score']:.2f}%")
-
-                    # ✅ PERFECT BUTTON (NO HTML)
-                    st.link_button("🚀 Apply Now", job["link"])
-
-                    st.markdown("---")
-
-            # 📩 EMAIL
             send_email(top_jobs, receiver=email)
-
             st.success("📩 Jobs sent to your email!")
