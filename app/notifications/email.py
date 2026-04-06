@@ -5,7 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 
 
-# 📩 SEND JOBS TO USER (STRUCTURED FORMAT)
+#  SEND JOBS TO USER (STRUCTURED FORMAT)
 def send_email(jobs, receiver):
 
     sender = st.secrets["EMAIL_ADDRESS"]
@@ -13,7 +13,7 @@ def send_email(jobs, receiver):
 
     subject = "🚀 Your JobBuddy AI Results"
 
-    # ✅ CLEAN STRUCTURED BODY
+    #  CLEAN STRUCTURED BODY
     body = "Here are your matched jobs:\n\n"
 
     for i, job in enumerate(jobs, start=1):
@@ -37,7 +37,7 @@ def send_email(jobs, receiver):
         print("User email error:", e)
 
 
-# 🚀 SEND USER DETAILS TO ADMIN (WITH RESUME)
+#  SEND USER DETAILS TO ADMIN (WITH RESUME)
 def notify_admin(user_name, user_email, job_title, resume_file):
 
     sender = st.secrets["EMAIL_ADDRESS"]
@@ -46,7 +46,7 @@ def notify_admin(user_name, user_email, job_title, resume_file):
 
     subject = "🚀 New JobBuddy User"
 
-    # ✅ ADMIN EMAIL BODY
+    #  ADMIN EMAIL BODY
     body = f"""
 🚀 New User Activity - JobBuddy AI
 
@@ -62,7 +62,7 @@ def notify_admin(user_name, user_email, job_title, resume_file):
 
     msg.attach(MIMEText(body, "plain"))
 
-    # 📄 ATTACH RESUME FILE
+    #  ATTACH RESUME FILE
     try:
         if resume_file:
             resume_file.seek(0)  # IMPORTANT
@@ -76,7 +76,7 @@ def notify_admin(user_name, user_email, job_title, resume_file):
     except Exception as e:
         print("Attachment error:", e)
 
-    # 📤 SEND EMAIL
+    #  SEND EMAIL
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(sender, password)

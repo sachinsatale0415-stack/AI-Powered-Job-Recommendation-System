@@ -9,18 +9,18 @@ from app.matching.matcher import calculate_match
 from app.notifications.email import send_email, notify_admin
 
 
-# 🔥 PAGE CONFIG
+#  PAGE CONFIG
 st.set_page_config(page_title="JobBuddy AI", layout="wide")
 
 
-# 🔥 CLEAN HTML FUNCTION
+#  CLEAN HTML FUNCTION
 def clean_html(text):
     if not text:
         return ""
     return re.sub('<.*?>', '', text)
 
 
-# 🔥 BACKGROUND IMAGE
+#  BACKGROUND IMAGE
 def get_base64(file_path):
     with open(file_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
@@ -28,7 +28,7 @@ def get_base64(file_path):
 bg_image = get_base64("assets/bg.png")
 
 
-# 🔥 CSS
+#  CSS
 st.markdown(f"""
 <style>
 .stApp {{
@@ -63,7 +63,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
-# 🔥 HEADER
+#  HEADER
 st.markdown('<div class="title">🚀 JobBuddy AI</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Find the best jobs tailored to your resume using AI</div>', unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
@@ -72,28 +72,28 @@ st.markdown("<br>", unsafe_allow_html=True)
 # 🔹 INPUT SECTION
 st.markdown('<div class="section">', unsafe_allow_html=True)
 
-# ✅ NEW NAME FIELD (ADDED)
+#  NEW NAME FIELD (ADDED)
 name = st.text_input("👤 Full Name", placeholder="Enter your full name")
 
 uploaded_file = st.file_uploader("📤 Upload Resume", type=["pdf"])
 job_title = st.text_input("💼 Job Title", placeholder="Data Analyst")
 email = st.text_input("📧 Email", placeholder="your@email.com")
 
-# ✅ PRIVACY LINE (ADDED)
+#  PRIVACY LINE (ADDED)
 st.caption("⚠️ Your data may be used for analytics and improvement purposes.")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
 
-# 🔍 BUTTON
+#  BUTTON
 if st.button("🔍 Find Jobs"):
 
-    # ✅ UPDATED VALIDATION
+    #  UPDATED VALIDATION
     if not uploaded_file or not email or not name:
         st.warning("Please fill all fields (Name, Resume, Email)")
 
     else:
-        # 🔥 SEND ADMIN EMAIL (ADDED)
+        #  SEND ADMIN EMAIL (ADDED)
         notify_admin(name, email, job_title, uploaded_file)
 
         with st.spinner("🤖 AI is analyzing your resume..."):
@@ -162,7 +162,7 @@ if st.button("🔍 Find Jobs"):
 
             top_jobs = matched_jobs[:10]
 
-        # 🎯 RESULTS
+        #  RESULTS
         st.markdown("## 🎯 Top Results")
 
         if not top_jobs:
@@ -186,7 +186,7 @@ if st.button("🔍 Find Jobs"):
                     st.link_button("🚀 Apply Now", job["link"])
                     st.markdown("---")
 
-            # 📩 USER EMAIL
+            #  USER EMAIL
             send_email(top_jobs, receiver=email)
 
             st.success("📩 Jobs sent to your email!")

@@ -3,7 +3,7 @@ import requests
 import re
 from tavily import TavilyClient
 
-# 🔐 API KEYS
+#  API KEYS
 TAVILY_API_KEY = st.secrets["TAVILY_API_KEY"]
 ADZUNA_APP_ID = st.secrets["ADZUNA_APP_ID"]
 ADZUNA_APP_KEY = st.secrets["ADZUNA_APP_KEY"]
@@ -11,7 +11,7 @@ ADZUNA_APP_KEY = st.secrets["ADZUNA_APP_KEY"]
 tavily = TavilyClient(api_key=TAVILY_API_KEY)
 
 
-# 🔥 CLEAN HTML FUNCTION
+#  CLEAN HTML FUNCTION
 def clean_html(text):
     if not text:
         return ""
@@ -35,7 +35,7 @@ def fetch_from_tavily(job_title):
         title = clean_html(r.get("title", "")).lower()
         url = r.get("url", "")
 
-        # ❌ REMOVE AGGREGATED / LISTING PAGES
+        #  REMOVE AGGREGATED / LISTING PAGES
         if any(x in title for x in [
             "jobs in", "jobs -", "jobs |", "vacancies",
             "glassdoor", "linkedin jobs", "naukri jobs",
@@ -43,7 +43,7 @@ def fetch_from_tavily(job_title):
         ]):
             continue
 
-        # ❌ REMOVE INVALID LINKS
+        #  REMOVE INVALID LINKS
         if not url or "jobs" in url and "search" in url:
             continue
 
@@ -92,7 +92,7 @@ def fetch_from_adzuna(job_title):
     for j in results:
         description = clean_html(j.get("description", "").lower())
 
-        # ❌ REMOVE SENIOR ROLES
+        #  REMOVE SENIOR ROLES
         if any(x in description for x in [
             "7+ years", "10+ years", "senior manager"
         ]):
@@ -108,7 +108,7 @@ def fetch_from_adzuna(job_title):
     return jobs
 
 
-# 🔹 REMOVE DUPLICATES
+#  REMOVE DUPLICATES
 def remove_duplicates(jobs):
     unique_jobs = []
     seen = set()
@@ -123,7 +123,7 @@ def remove_duplicates(jobs):
     return unique_jobs
 
 
-# 🔹 MAIN FUNCTION
+#  MAIN FUNCTION
 def fetch_jobs(job_title):
     print(f"\nFetching jobs for: {job_title}")
 
